@@ -1,14 +1,16 @@
 package application;
 
-import javax.swing.JPanel;
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
+import java.util.Random;
 
 public class BlockBreakerPanel extends JPanel implements KeyListener {
     ArrayList<Block> blocks = new ArrayList<Block>();
     ArrayList<Block> balls = new ArrayList<Block>();
+    ArrayList<Block> powerup = new ArrayList<Block>();
 
     Block paddle;
     Thread thread;
@@ -31,6 +33,14 @@ public class BlockBreakerPanel extends JPanel implements KeyListener {
             blocks.add(new Block((i*60+2), 75, 60, 25, "./images/yellow.png"));
         }
 
+        Random random = new Random();
+        blocks.get(random.nextInt(32)).powerup = true;
+        blocks.get(random.nextInt(32)).powerup = true;
+        blocks.get(random.nextInt(32)).powerup = true;
+        blocks.get(random.nextInt(32)).powerup = true;
+        blocks.get(random.nextInt(32)).powerup = true;
+        blocks.get(random.nextInt(32)).powerup = true;
+
         balls.add(new Block(237, 437, 25, 25, "./images/ball.png"));
 
         addKeyListener(this);
@@ -44,10 +54,19 @@ public class BlockBreakerPanel extends JPanel implements KeyListener {
             b.draw(g, this);
         for(Block b: balls)
             b.draw(g, this);
+        for(Block b: powerup)
+            b.draw(g, this);
         paddle.draw(g, this);
     }
 
     public void update() {
+        for(Block p : powerup) {
+            p.y += 1;
+            if(p.intersects(paddle) && !p.destroyed) {
+                p.destroyed = true;
+                balls.add(new Block(paddle.dx + 75, 437, 25, 25, "./images/ball.png" ));
+            }
+        }
         for(Block ba : balls) {
             ba.x += ba.dx;
             ba.y += ba.dy;
@@ -58,9 +77,19 @@ public class BlockBreakerPanel extends JPanel implements KeyListener {
                 ba.dy *= -1;
             }
             for(Block b : blocks) {
-                if(ba.intersects(b) && !b.destroyed) {
+                if((ba.intersects(b) || ba. right.intersects(b)) && !b.destroyed) {
+                    b.destroyed = true;
+                    ba.dx *= -1;
+                    if(b.powerup) {
+                        powerup.add(new Block(b.x, b.y, 25, 19, "./images/extra.png"));
+                    }
+                }
+                else if(ba.left.intersects(b) && !b.destroyed) {
                     b.destroyed = true;
                     ba.dy *= -1;
+                    if(b.powerup) {
+                        powerup.add(new Block(b.x, b.y, 25, 19, "./images/extra.png"));
+                    }
                 }
             }
 
